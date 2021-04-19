@@ -7,9 +7,12 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.android.gms.cast.MediaInfo;
+import com.google.android.gms.cast.MediaLoadRequestData;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.SessionManager;
+import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -68,12 +71,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnLoadImage:
+                try {
+                    if(sessionManager.getCurrentCastSession() != null) {
+                        MediaInfo mediaInfo = new MediaInfo.Builder("https://www.google.com/logos/doodles/2021/celebrating-laura-bassi-6753651837109199-l.png")
+                                .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                                .setContentType("image/png")
+                                .build();
+
+                        MediaLoadRequestData mediaLoadRequestData = new MediaLoadRequestData.Builder().setMediaInfo(mediaInfo).setAutoplay(true).build();
+
+                        RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
+                        remoteMediaClient.load(mediaLoadRequestData);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case R.id.btnLoadAudio:
+                try {
+                    if(sessionManager.getCurrentCastSession() != null) {
+                        MediaInfo mediaInfo = new MediaInfo.Builder("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
+                                .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                                .setContentType("audio/mpeg")
+                                .build();
+
+                        MediaLoadRequestData mediaLoadRequestData = new MediaLoadRequestData.Builder().setMediaInfo(mediaInfo).setAutoplay(true).build();
+
+                        RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
+                        remoteMediaClient.load(mediaLoadRequestData);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case R.id.btnLoadVideo:
+                try {
+                    if(sessionManager.getCurrentCastSession() != null) {
+                        MediaInfo mediaInfo = new MediaInfo.Builder("http://commondatastorage.googleapis.com/gtv-videos-bucket/big_buck_bunny_1080p.mp4")
+                                .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                                .setContentType("video/mp4")
+                                .build();
+
+                        MediaLoadRequestData mediaLoadRequestData = new MediaLoadRequestData.Builder().setMediaInfo(mediaInfo).setAutoplay(true).build();
+
+                        RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
+                        remoteMediaClient.load(mediaLoadRequestData);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case R.id.btnPlayPause:
