@@ -9,6 +9,7 @@ import android.widget.Button;
 
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
+import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.SessionManager;
@@ -125,9 +126,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.btnPlayPause:
+                try {
+                    RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
+                    switch (remoteMediaClient.getPlayerState()) {
+                        case MediaStatus.PLAYER_STATE_PAUSED:
+                            remoteMediaClient.play();
+                            break;
+
+                        case MediaStatus.PLAYER_STATE_PLAYING:
+                            remoteMediaClient.pause();
+                            break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case R.id.btnStop:
+                RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
+                remoteMediaClient.stop();
                 break;
         }
     }
