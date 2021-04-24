@@ -1,21 +1,27 @@
 package com.smitdesai16.chromecastforandroidwithdefaultmediareceiver;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
+import com.google.android.gms.cast.MediaSeekOptions;
 import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.SessionManager;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private SessionManager sessionManager;
 
@@ -26,6 +32,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btnLoadVideo;
     private Button btnPlayPause;
     private Button btnStop;
+    private SeekBar sbProgressBar;
+
+    private long duration = 0;
+
+    private RemoteMediaClient.ProgressListener progressListener = new RemoteMediaClient.ProgressListener() {
+        @Override
+        public void onProgressUpdated(long l, long l1) {
+            if(duration == 0 && l1 > 0) {
+                duration = l1;
+            }
+
+            if (l1 > 0) {
+                sbProgressBar.setProgress((int)(l*100/l1));
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +62,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnLoadVideo = findViewById(R.id.btnLoadVideo);
         btnPlayPause = findViewById(R.id.btnPlayPause);
         btnStop = findViewById(R.id.btnStop);
+        sbProgressBar = findViewById(R.id.sbProgressBar);
 
         btnLoadImage.setOnClickListener(this);
         btnLoadAudio.setOnClickListener(this);
         btnLoadVideo.setOnClickListener(this);
         btnPlayPause.setOnClickListener(this);
         btnStop.setOnClickListener(this);
+        sbProgressBar.setOnSeekBarChangeListener(this);
     }
 
     @Override
@@ -119,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
                         remoteMediaClient.load(mediaLoadRequestData);
+
+                        remoteMediaClient.addProgressListener(progressListener, 5000);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -145,6 +171,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btnStop:
                 RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
                 remoteMediaClient.stop();
+                sbProgressBar.setProgress(0);
+                duration = 0;
+                remoteMediaClient.removeProgressListener(progressListener);
+                break;
+        }
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        switch (seekBar.getId()) {
+            case R.id.sbProgressBar:
+                try {
+                    RemoteMediaClient remoteMediaClient = sessionManager.getCurrentCastSession().getRemoteMediaClient();
+                    MediaSeekOptions mediaSeekOptions = new MediaSeekOptions.Builder().setPosition(seekBar.getProgress() *duration/100).build();
+                    remoteMediaClient.seek(mediaSeekOptions);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
         }
     }
